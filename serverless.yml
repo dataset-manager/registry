@@ -97,9 +97,17 @@ resources:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         TableName: ${self:custom.tableName}
-    # DatasetESDomain:
-    #   Type: 'AWS::Elasticsearch::Domain'
-    #   Properties:
-    #     DomainName: ${self:custom.domainName}
-		# 		ElasticsearchClusterConfig:
-		# 			InstanceType: t2.micro.elasticsearch
+    DatasetESDomain:
+      Type: 'AWS::Elasticsearch::Domain'
+      Properties:
+        DomainName: ${self:custom.domainName}
+        ElasticsearchVersion: '2.3'
+        ElasticsearchClusterConfig:
+          InstanceCount: 1
+          InstanceType: t2.micro.elasticsearch
+          DedicatedMasterEnabled: false
+          ZoneAwarenessEnabled: false
+        EBSOptions:
+          EBSEnabled: true
+          VolumeType: standard
+          VolumeSize: 10
