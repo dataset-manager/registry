@@ -1,0 +1,27 @@
+{
+  "name": "dsm-registry",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Serverless dsm registry",
+  "engine": "node 4.3.0",
+  "scripts": {
+    "lint": "standard",
+    "build": "serverless deploy --stage dev -v",
+    "deploy": "serverless deploy --stage prod"
+  },
+  "author": "Mathieu Dutour <mathieu@dutour.me> (http://mathieu.dutour.me/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dataset-manager/registry/issues"
+  },
+  "homepage": "https://github.com/dataset-manager/registry#readme",
+  "dependencies": {
+    "github": "^3.1.1",
+    "semver": "^5.3.0"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.6.1",
+    "serverless": "^1.4.0",
+    "standard": "^7.1.2"
+  }
+}

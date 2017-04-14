@@ -1,0 +1,105 @@
+service: dsm-registry
+
+custom:
+  tableName: ${opt:stage, self:provider.stage}-dataset
+  domainName: ${opt:stage, self:provider.stage}-dataset-es
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  stage: dev
+  profile: perso
+  region: eu-west-1
+  environment:
+    TABLE_NAME: ${self:custom.tableName}
+    DOMAIN_NAME: ${self:custom.domainName}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:*"
+        - "es:*"
+        - "logs:CreateLogGroup"
+        - "logs:CreateLogStream"
+        - "logs:PutLogEvents"
+        - "apigateway:POST"
+      Resource:
+        - arn:aws:dynamodb:*:*:table/${self:custom.tableName}
+        - arn:aws:es:*:*:domain/${self:custom.domainName}
+        - "arn:aws:apigateway:*"
+
+package:
+  exclude:
+    - "node_modules/aws-sdk/**"
+    - "node_modules/serverless/**"
+    - "node_modules/standard/**"
+    - "**/*.test.js"
+
+functions:
+  packageSearch:
+    handler: lib/package/search/index.handler
+    events:
+      - http:
+          path: "registry"
+          method: get
+          cors: true
+          integration: lambda
+          request:
+            template:
+              application/json: >
+                {
+                  "q": "$input.params('q')"
+                }
+  packageGet:
+    handler: lib/package/get/index.handler
+    events:
+      - http:
+          path: "registry/{name}"
+          method: get
+          cors: true
+          integration: lambda
+          request:
+            template:
+              application/json: >
+                {
+                  "name": "$input.params('name')"
+                }
+  packagePut:
+    handler: lib/package/put/index.handler
+    events:
+      - http:
+          path: "registry/{name}"
+          method: put
+          cors: true
+          integration: lambda
+          request:
+            template:
+              application/json: >
+                {
+                  "name": "$input.params('name')",
+                  "body": "$util.escapeJavaScript($input.json('$'))"
+                }
+
+resources:
+  Resources:
+    DatasetDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: name
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: name
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:custom.tableName}
+    # DatasetESDomain:
+    #   Type: 'AWS::Elasticsearch::Domain'
+    #   Properties:
+    #     DomainName: ${self:custom.domainName}
+		# 		ElasticsearchClusterConfig:
+		# 			InstanceType: t2.micro.elasticsearch
